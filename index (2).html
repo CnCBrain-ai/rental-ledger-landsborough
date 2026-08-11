@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rental Ledger Portal — James Landsborough</title>
+<title>Rental Ledger Portal — James &amp; Melissa Fuller</title>
 <style>
   :root {
     --bg-page: #f5f6f8;
@@ -271,7 +271,7 @@
       <div class="error-msg" id="error-msg"></div>
       <button type="submit" class="submit-btn">Unlock</button>
     </form>
-    <div class="footer-hint">Rental Ledger — James Landsborough</div>
+    <div class="footer-hint">Rental Ledger — James &amp; Melissa Fuller</div>
   </div>
 </div>
 
@@ -279,8 +279,8 @@
 <div id="app">
   <div class="app-header">
     <div class="title-block">
-      <h1>Rental Ledger — James Landsborough</h1>
-      <p>Private portal · Confidential financial record</p>
+      <h1>Rental Ledger — James &amp; Melissa Fuller</h1>
+      <p>Landlords of Cabin 3, 29 Beech Road, Landsborough · Private portal · Confidential financial record</p>
       <div class="updated">Last updated: <span id="last-updated">—</span></div>
     </div>
     <div class="header-actions">
@@ -320,7 +320,7 @@
 
     <div class="legend">
       <div class="legend-item"><span class="legend-dot" style="background: var(--purple-600)"></span><strong>Account A:</strong> BSB 923-100, Acc 300152191 ("James")</div>
-      <div class="legend-item"><span class="legend-dot" style="background: var(--teal-600)"></span><strong>Account B:</strong> BSB 064-226, Acc 10133118 ("James Landsborough R...")</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--teal-600)"></span><strong>Account B:</strong> BSB 064-226, Acc 10133118 ("James Landsborough R..." — the Fullers' account)</div>
     </div>
 
     <h3 class="section">Running Totals</h3>
@@ -407,7 +407,7 @@
       <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--brand-primary);">🏠 Property</div>
       <div class="form-row">
         <label for="s-property-addr">Property Address</label>
-        <input type="text" id="s-property-addr" placeholder="e.g. 29 Beech Road, Landsborough QLD">
+        <input type="text" id="s-property-addr" placeholder="e.g. Cabin 3, 29 Beech Road, Landsborough QLD">
       </div>
     </div>
 
@@ -584,11 +584,11 @@ let nextId = 21;
 
 // Editable party details (shown on Print View)
 let settings = {
-  propertyAddress: "29 Beech Road, Landsborough QLD",
+  propertyAddress: "Cabin 3, 29 Beech Road, Landsborough QLD",
   tenantName: "Carla Oliver",
   tenantPhone: "",
   tenantEmail: "",
-  landlordNames: "James and Melissa Fuller",
+  landlordNames: "James & Melissa Fuller",
   landlordAddress: "29 Beech Road, Landsborough QLD",
   landlordPhone: "",
   landlordEmail: ""
