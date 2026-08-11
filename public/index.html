@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rental Ledger Portal — James &amp; Melissa Fuller</title>
+<style>
+  :root {
+    --bg-page: #f5f6f8;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f0f2f5;
+    --text-primary: #1a1d21;
+    --text-secondary: #5a6270;
+    --text-tertiary: #8a919e;
+    --brand-primary: #1f4e79;
+    --brand-secondary: #0f7fff;
+    --border-default: #dfe3e8;
+    --border-subtle: #eceff3;
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --purple-600: #7c3aed;
+    --teal-600: #0d9488;
+    --radius-8: 8px;
+    --radius-12: 12px;
+    --radius-16: 16px;
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-page); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+
+  /* LOGIN */
+  #login-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1f4e79 0%, #0f7fff 100%); padding: 20px; z-index: 100; }
+  .login-card { background: var(--bg-surface); border-radius: var(--radius-16); padding: 40px 32px; width: 100%; max-width: 380px; box-shadow: var(--shadow-lg); text-align: center; }
+  .lock-icon { width: 56px; height: 56px; margin: 0 auto 16px; background: #eef4fb; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .lock-icon svg { width: 28px; height: 28px; color: var(--brand-primary); }
+  .login-card h1 { font-size: 22px; margin: 0 0 8px 0; }
+  .login-card p.subtitle { font-size: 14px; color: var(--text-secondary); margin: 0 0 24px 0; }
+  .login-card label { display: block; text-align: left; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+  .password-wrap { position: relative; }
+  .login-card input[type="password"], .login-card input[type="text"] { width: 100%; padding: 12px 40px 12px 14px; font-size: 15px; border: 1px solid var(--border-default); border-radius: var(--radius-8); outline: none; background: var(--bg-surface); color: var(--text-primary); }
+  .login-card input:focus { border-color: var(--brand-secondary); box-shadow: 0 0 0 3px rgba(15,127,255,0.15); }
+  .toggle-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: var(--text-tertiary); }
+  .toggle-eye svg { width: 18px; height: 18px; display: block; }
+  .login-card button.submit-btn { width: 100%; margin-top: 16px; padding: 12px; font-size: 15px; font-weight: 600; background: var(--brand-primary); color: #fff; border: none; border-radius: var(--radius-8); cursor: pointer; }
+  .login-card button.submit-btn:hover { background: #163b5c; }
+  .error-msg { color: var(--error); font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .footer-hint { margin-top: 20px; font-size: 12px; color: var(--text-tertiary); }
+
+  /* APP */
+  #app { display: none; max-width: 1150px; margin: 0 auto; padding: 24px 20px 60px; }
+  #app.visible { display: block; }
+  .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .app-header .title-block h1 { font-size: 22px; margin: 0 0 4px 0; color: var(--brand-primary); }
+  .app-header .title-block p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+  .app-header .title-block .updated { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { padding: 8px 14px; font-size: 13px; border-radius: var(--radius-8); cursor: pointer; font-weight: 500; border: 1px solid transparent; white-space: nowrap; }
+  .btn-primary { background: var(--brand-secondary); color: #fff; border-color: var(--brand-secondary); }
+  .btn-primary:hover { background: #0d6ee0; }
+  .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-success:hover { background: #0ea770; }
+  .btn-secondary { background: var(--bg-surface); color: var(--text-secondary); border-color: var(--border-default); }
+  .btn-secondary:hover { background: var(--bg-subtle); color: var(--text-primary); }
+  .btn-danger { background: #fef2f2; color: var(--error); border-color: #fecaca; }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .ledger-card { background: var(--bg-surface); border-radius: var(--radius-12); padding: 24px; box-shadow: var(--shadow-md); }
+
+  /* Lease banner */
+  .lease-banner { background: linear-gradient(135deg, #1f4e79 0%, #2d6ba5 100%); color: #fff; border-radius: var(--radius-12); padding: 20px 24px; margin-bottom: 20px; }
+  .lease-banner h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0; opacity: 0.85; font-weight: 600; }
+  .lease-dates { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; }
+  .lease-dates .date-block .lbl { font-size: 11px; text-transform: uppercase; opacity: 0.75; letter-spacing: 0.5px; }
+  .lease-dates .date-block .val { font-size: 18px; font-weight: 600; margin-top: 4px; }
+  .progress-wrap { margin-top: 16px; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.9; margin-bottom: 6px; flex-wrap: wrap; gap: 8px; }
+  .progress-bar { height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); border-radius: 5px; transition: width 0.4s ease; }
+
+  .meta { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0 24px; }
+  .stat-card { background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-8); padding: 12px; }
+  .stat-card .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 18px; font-weight: 600; margin-top: 4px; color: var(--text-primary); }
+  .stat-card.highlight { background: #eef4fb; border-color: #cfe0f5; }
+  .stat-card.highlight .value { color: var(--brand-primary); }
+  .stat-card.success { background: #ecfdf5; border-color: #a7f3d0; }
+  .stat-card.success .value { color: var(--success); }
+  .stat-card.warning { background: #fffbeb; border-color: #fde68a; }
+  .stat-card.warning .value { color: #b45309; }
+
+  h3.section { font-size: 16px; margin: 24px 0 12px; color: var(--brand-primary); border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  h3.section .section-actions { font-size: 12px; font-weight: 400; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-8); overflow: hidden; }
+  th { background: var(--bg-subtle); text-align: left; padding: 8px 12px; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); border-bottom: 1px solid var(--border-default); white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.paid { color: var(--success); font-weight: 500; }
+  td.acct { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; white-space: nowrap; }
+  .acct-a { color: var(--purple-600); }
+  .acct-b { color: var(--teal-600); }
+  .bond-row td { background: rgba(15, 127, 255, 0.06); }
+  .legend { display: flex; gap: 16px; margin: 12px 0; font-size: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .footer-note { margin-top: 16px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-8); font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+  .row-actions { display: flex; gap: 4px; }
+
+  /* Add payment form modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 200; overflow-y: scroll; -webkit-overflow-scrolling: touch; }
+  .modal-overlay.open { display: block; }
+  .modal { background: var(--bg-surface); border-radius: var(--radius-12); padding: 24px; width: calc(100% - 40px); max-width: 480px; box-shadow: var(--shadow-lg); margin: 20px auto; }
+  .modal h2 { margin: 0 0 16px 0; font-size: 18px; color: var(--brand-primary); }
+  .form-row { margin-bottom: 12px; }
+  .form-row label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+  .form-row input, .form-row select, .form-row textarea { width: 100%; padding: 8px 10px; font-size: 14px; border: 1px solid var(--border-default); border-radius: var(--radius-8); font-family: inherit; background: var(--bg-surface); color: var(--text-primary); }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { outline: none; border-color: var(--brand-secondary); box-shadow: 0 0 0 3px rgba(15,127,255,0.1); }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .form-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+
+  .empty-row { color: var(--text-tertiary); font-style: italic; text-align: center; padding: 16px; }
+  .help-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-8); padding: 12px; font-size: 12px; color: #92400e; margin-bottom: 16px; }
+  .help-box strong { color: #78350f; }
+
+  @media print {
+    #login-screen, .modal-overlay { display: none !important; }
+    .header-actions, .row-actions, .section-actions, .help-box { display: none !important; }
+    body { background: #fff; }
+    .ledger-card { box-shadow: none; padding: 0; }
+    .lease-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ============ MOBILE RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    #app { padding: 12px 12px 40px; }
+    .app-header { flex-direction: column; align-items: stretch; gap: 12px; }
+    .app-header .title-block h1 { font-size: 18px; }
+    .header-actions { flex-wrap: wrap; gap: 6px; }
+    .header-actions .btn { flex: 1 1 auto; font-size: 12px; padding: 8px 10px; min-width: 0; }
+
+    .ledger-card { padding: 14px; border-radius: 8px; }
+    .help-box { font-size: 11px; padding: 10px; }
+
+    .lease-banner { padding: 14px; }
+    .lease-banner h2 { font-size: 12px; }
+    .lease-dates { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .lease-dates .date-block .val { font-size: 14px; }
+    .lease-dates .date-block .lbl { font-size: 10px; }
+    .progress-labels { flex-direction: column; gap: 4px; }
+
+    .legend { flex-direction: column; gap: 6px; font-size: 11px; }
+
+    .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card { padding: 10px; }
+    .stat-card .value { font-size: 15px; }
+    .stat-card .label { font-size: 10px; }
+
+    h3.section { font-size: 14px; flex-direction: column; align-items: flex-start; gap: 6px; }
+    h3.section .section-actions { align-self: stretch; }
+    h3.section .section-actions .btn { width: 100%; }
+
+    /* Tables: keep horizontal scroll but shrink text so most fits */
+    table { font-size: 11px; min-width: 560px; }
+    th, td { padding: 6px 8px; }
+    th { font-size: 10px; }
+    td.acct { font-size: 10px; }
+    .table-wrap { border: 1px solid var(--border-subtle); border-radius: 6px; }
+    .table-wrap::before { content: "→ swipe to scroll"; display: block; font-size: 10px; color: var(--text-tertiary); padding: 4px 8px; background: var(--bg-subtle); font-style: italic; }
+
+    .row-actions { flex-direction: column; gap: 3px; }
+    .row-actions .btn { padding: 3px 6px; font-size: 10px; }
+
+    /* Modal on mobile: near full-width */
+    .modal { padding: 18px; margin: 10px auto; width: calc(100% - 20px); }
+    .modal h2 { font-size: 16px; }
+    .form-row input, .form-row select { font-size: 16px; /* prevent iOS auto-zoom */ padding: 10px; }
+    .form-actions { flex-direction: column-reverse; gap: 8px; }
+    .form-actions .btn { width: 100%; }
+
+    /* Login screen on mobile */
+    .login-card { padding: 28px 20px; }
+    .login-card h1 { font-size: 20px; }
+    .login-card input[type="password"], .login-card input[type="text"] { font-size: 16px; }
+
+    /* Print view toolbar */
+    .pv-toolbar { padding: 10px 12px; }
+    .pv-toolbar .pv-title { display: none; }
+    .pv-toolbar .pv-actions { width: 100%; }
+    .pv-toolbar .pv-actions .btn { flex: 1; font-size: 12px; }
+    .pv-page { padding: 20px 16px; margin: 12px auto; font-size: 10pt; }
+    .pv-page .pv-header h1 { font-size: 18pt; }
+    .pv-page .pv-info-grid { grid-template-columns: 1fr; }
+    .pv-page .pv-signatures { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  @media (max-width: 420px) {
+    .lease-dates { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+    .header-actions .btn { flex: 1 1 45%; }
+  }
+
+  /* ============ PRINT VIEW ============ */
+  #print-view { display: none; }
+  #print-view.active { display: block; position: fixed; inset: 0; background: #fff; z-index: 300; overflow-y: auto; padding: 0; }
+  .pv-toolbar { position: sticky; top: 0; background: #f5f6f8; border-bottom: 1px solid var(--border-default); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; z-index: 10; }
+  .pv-toolbar .pv-title { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+  .pv-toolbar .pv-actions { display: flex; gap: 8px; }
+  .pv-page { max-width: 820px; margin: 32px auto; background: #fff; padding: 48px 56px; color: #1a1d21; font-family: Georgia, "Times New Roman", serif; font-size: 12pt; line-height: 1.5; }
+  .pv-page .pv-header { border-bottom: 3px double #1a1d21; padding-bottom: 16px; margin-bottom: 24px; }
+  .pv-page .pv-header h1 { font-size: 22pt; margin: 0 0 4px 0; font-weight: 700; letter-spacing: 0.5px; }
+  .pv-page .pv-header .pv-subtitle { font-size: 11pt; color: #555; font-style: italic; }
+  .pv-page .pv-header .pv-meta-line { font-size: 10pt; color: #666; margin-top: 8px; }
+  .pv-page h2.pv-section { font-size: 13pt; font-weight: 700; margin: 24px 0 10px 0; padding-bottom: 4px; border-bottom: 1px solid #333; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pv-page .pv-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin: 12px 0 20px 0; }
+  .pv-page .pv-info-grid .pv-row { display: flex; justify-content: space-between; border-bottom: 1px dotted #bbb; padding: 4px 0; }
+  .pv-page .pv-info-grid .pv-row .lbl { color: #555; font-size: 10.5pt; }
+  .pv-page .pv-info-grid .pv-row .val { font-weight: 600; font-size: 10.5pt; }
+  .pv-page table.pv-table { width: 100%; border-collapse: collapse; font-family: Georgia, "Times New Roman", serif; font-size: 10pt; margin: 10px 0 20px 0; }
+  .pv-page table.pv-table th { background: #f0f0f0; color: #000; text-align: left; padding: 6px 8px; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #333; border-top: 2px solid #333; }
+  .pv-page table.pv-table td { padding: 5px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .pv-page table.pv-table tr.pv-total td { font-weight: 700; border-top: 2px solid #333; border-bottom: 2px solid #333; background: #f5f5f5; }
+  .pv-page table.pv-table td.pv-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pv-page table.pv-table td.pv-acct { font-family: "Courier New", monospace; font-size: 9.5pt; white-space: nowrap; }
+  .pv-page .pv-totals-box { border: 2px solid #1a1d21; padding: 12px 16px; margin: 16px 0; background: #fafafa; }
+  .pv-page .pv-totals-box .pv-total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11pt; }
+  .pv-page .pv-totals-box .pv-total-row.pv-grand { border-top: 2px solid #1a1d21; padding-top: 8px; margin-top: 6px; font-weight: 700; font-size: 12pt; }
+  .pv-page .pv-declaration { margin-top: 32px; padding: 12px; border: 1px solid #999; background: #fafafa; font-size: 10pt; font-style: italic; line-height: 1.6; }
+  .pv-page .pv-signatures { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .pv-page .pv-signatures .pv-sig-block { }
+  .pv-page .pv-signatures .pv-sig-line { border-bottom: 1px solid #000; height: 40px; margin-bottom: 4px; }
+  .pv-page .pv-signatures .pv-sig-label { font-size: 10pt; color: #333; }
+  .pv-page .pv-footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #bbb; font-size: 9pt; color: #666; text-align: center; font-style: italic; }
+
+  @media print {
+    .pv-toolbar { display: none !important; }
+    #print-view.active { position: static; }
+    #app { display: none !important; }
+    .pv-page { margin: 0; padding: 20mm; max-width: 100%; box-shadow: none; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <h1>Private Portal</h1>
+    <p class="subtitle">Enter password to access rental ledger</p>
+    <form id="login-form" autocomplete="off">
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input type="password" id="password" name="password" placeholder="Enter password" autofocus required>
+        <button type="button" class="toggle-eye" id="toggle-eye" aria-label="Show password">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      </div>
+      <div class="error-msg" id="error-msg"></div>
+      <button type="submit" class="submit-btn">Unlock</button>
+    </form>
+    <div class="footer-hint">Rental Ledger — James &amp; Melissa Fuller</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div class="title-block">
+      <h1>Rental Ledger — James &amp; Melissa Fuller</h1>
+      <p>Landlords of Cabin 3, 29 Beech Road, Landsborough · Private portal · Confidential financial record</p>
+      <div class="updated">Last updated: <span id="last-updated">—</span></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-success" onclick="openAddModal('rent')">+ Add Rent Payment</button>
+      <button class="btn btn-primary" onclick="openAddModal('other')">+ Add Other Payment</button>
+      <button class="btn btn-secondary" onclick="exportData()">💾 Save Data</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📂 Load Data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-primary" onclick="openPrintView()">🖨️ Print View</button>
+      <button class="btn btn-secondary" onclick="openSettings()">⚙️ Settings</button>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="ledger-card">
+    <div class="help-box">
+      <strong>💡 How this works:</strong> After every new payment, click <strong>+ Add Rent Payment</strong> (or <strong>+ Add Other Payment</strong>) to log it — your entries are <strong>saved automatically in this browser</strong> and will still be here next time you open the portal on this device. Use <strong>💾 Save Data</strong> to download a backup file (handy before clearing your browser, or to move your ledger to another device/browser via <strong>📂 Load Data</strong>).
+    </div>
+
+    <!-- LEASE BANNER -->
+    <div class="lease-banner">
+      <h2>12-Month Lease Agreement</h2>
+      <div class="lease-dates">
+        <div class="date-block"><div class="lbl">Lease Start</div><div class="val">Wed 6 May 2026</div></div>
+        <div class="date-block"><div class="lbl">Lease End</div><div class="val">Tue 4 May 2027</div></div>
+        <div class="date-block"><div class="lbl">Weekly Rent</div><div class="val">$700.00</div></div>
+        <div class="date-block"><div class="lbl">Total Rent Over Lease</div><div class="val">$36,400.00</div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-labels">
+          <span>Progress: <strong id="progress-text">— / 52 weeks</strong> paid</span>
+          <span><strong id="progress-pct">0%</strong> complete</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background: var(--purple-600)"></span><strong>Account A:</strong> BSB 923-100, Acc 300152191 ("James")</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--teal-600)"></span><strong>Account B:</strong> BSB 064-226, Acc 10133118 ("James Landsborough R..." — the Fullers' account)</div>
+    </div>
+
+    <h3 class="section">Running Totals</h3>
+    <div class="summary-grid">
+      <div class="stat-card success"><div class="label">Total Rent Paid</div><div class="value" id="stat-rent-paid">$0.00</div></div>
+      <div class="stat-card warning"><div class="label">Balance To Pay</div><div class="value" id="stat-balance">$36,400.00</div></div>
+      <div class="stat-card highlight"><div class="label">Total Rent (Full Lease)</div><div class="value">$36,400.00</div></div>
+      <div class="stat-card"><div class="label">Weeks Paid</div><div class="value" id="stat-weeks-paid">0 / 52</div></div>
+      <div class="stat-card"><div class="label">Rent Paid Up To</div><div class="value" id="stat-paid-to">—</div></div>
+      <div class="stat-card"><div class="label">Next Rent Due</div><div class="value" id="stat-next-due">—</div></div>
+      <div class="stat-card"><div class="label">Rent Position</div><div class="value" id="stat-rent-position">—</div></div>
+      <div class="stat-card"><div class="label">Bond Held</div><div class="value" id="stat-bond">$0.00</div></div>
+      <div class="stat-card"><div class="label">Non-Rent Paid</div><div class="value" id="stat-nonrent">$0.00</div></div>
+      <div class="stat-card"><div class="label">Total Sent To James</div><div class="value" id="stat-total-sent">$0.00</div></div>
+    </div>
+
+    <h3 class="section">
+      Rent Payments (Week-by-Week)
+      <span class="section-actions"><button class="btn btn-sm btn-success" onclick="openAddModal('rent')">+ Add Rent Payment</button></span>
+    </h3>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Wk #</th><th>Rent Period (Wed–Tue)</th><th>Payment Date</th><th>BSB</th><th>Account No.</th><th class="num">Amount</th><th>Notes</th><th></th></tr>
+      </thead>
+      <tbody id="rent-tbody"></tbody>
+    </table>
+    </div>
+
+    <h3 class="section">Remaining Rent Schedule</h3>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Wk #</th><th>Rent Period (Wed–Tue)</th><th class="num">Weekly Rent</th><th>Status</th></tr>
+      </thead>
+      <tbody id="remaining-tbody"></tbody>
+    </table>
+    </div>
+
+    <h3 class="section">
+      Bond &amp; Non-Rent Payments
+      <span class="section-actions"><button class="btn btn-sm btn-primary" onclick="openAddModal('other')">+ Add Other Payment</button></span>
+    </h3>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>BSB</th><th>Account No.</th><th class="num">Amount</th><th>Purpose</th><th></th></tr>
+      </thead>
+      <tbody id="other-tbody"></tbody>
+    </table>
+    </div>
+
+    <h3 class="section">Grand Totals</h3>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Category</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Total rent over full 12-month lease (52 × $700)</td><td class="num" style="font-weight: 600; color: var(--brand-primary);">$36,400.00</td></tr>
+        <tr><td>Rent paid to date</td><td class="num paid" id="gt-rent-paid">$0.00</td></tr>
+        <tr><td>Rent still to pay</td><td class="num" style="color: var(--warning); font-weight: 600;" id="gt-balance">$36,400.00</td></tr>
+        <tr><td>Bond held</td><td class="num" id="gt-bond">$0.00</td></tr>
+        <tr><td>Non-rent paid to date</td><td class="num" id="gt-nonrent">$0.00</td></tr>
+        <tr style="background: var(--bg-subtle); font-weight: 600;"><td>TOTAL SENT TO JAMES (all purposes)</td><td class="num paid" id="gt-total-sent">$0.00</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="footer-note">
+      <strong>Lease term:</strong> Wed 6 May 2026 → Tue 4 May 2027 (52 weeks) &nbsp;•&nbsp; <strong>Rent:</strong> $700/week &nbsp;•&nbsp; <strong>Bond:</strong> $700 held<br>
+      <strong>Rent paid up to:</strong> <span id="footer-paid-to">—</span> &nbsp;•&nbsp; <strong>Next rent due:</strong> <span id="footer-next-due">—</span><br>
+      <strong>Rent position:</strong> <span id="footer-rent-position">—</span><br>
+      <strong>Rent week runs:</strong> Wednesday → Tuesday. Each new rent payment is auto-mapped to the next unpaid week(s), so if you pay $1,400 it fills 2 weeks; $2,800 fills 4 weeks; etc.
+    </div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div class="modal-overlay" id="settings-overlay">
+  <div class="modal" style="max-width: 560px;">
+    <h2>⚙️ Portal Settings</h2>
+    <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 16px 0;">These details appear on the Print View statement. Click <strong>💾 Save Data</strong> after editing to persist them to your data file.</p>
+
+    <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-8);padding:12px;margin-bottom:12px;">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--brand-primary);">🏠 Property</div>
+      <div class="form-row">
+        <label for="s-property-addr">Property Address</label>
+        <input type="text" id="s-property-addr" placeholder="e.g. Cabin 3, 29 Beech Road, Landsborough QLD">
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-8);padding:12px;margin-bottom:12px;">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--brand-primary);">👤 Tenant (Lessee)</div>
+      <div class="form-row">
+        <label for="s-tenant-name">Tenant Full Name</label>
+        <input type="text" id="s-tenant-name" placeholder="e.g. Carla Oliver">
+      </div>
+      <div class="form-row">
+        <label for="s-tenant-phone">Tenant Phone (optional)</label>
+        <input type="text" id="s-tenant-phone" placeholder="e.g. 0400 000 000">
+      </div>
+      <div class="form-row">
+        <label for="s-tenant-email">Tenant Email (optional)</label>
+        <input type="text" id="s-tenant-email" placeholder="e.g. name@example.com">
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-8);padding:12px;margin-bottom:12px;">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--brand-primary);">🔑 Landlords (Lessors)</div>
+      <div class="form-row">
+        <label for="s-landlord-names">Landlord Name(s)</label>
+        <input type="text" id="s-landlord-names" placeholder="e.g. James and Melissa Fuller">
+      </div>
+      <div class="form-row">
+        <label for="s-landlord-addr">Landlord Address (optional)</label>
+        <input type="text" id="s-landlord-addr" placeholder="e.g. 29 Beech Road, Landsborough QLD">
+      </div>
+      <div class="form-row">
+        <label for="s-landlord-phone">Landlord Phone (optional)</label>
+        <input type="text" id="s-landlord-phone" placeholder="e.g. 0400 000 000">
+      </div>
+      <div class="form-row">
+        <label for="s-landlord-email">Landlord Email (optional)</label>
+        <input type="text" id="s-landlord-email" placeholder="e.g. name@example.com">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button type="button" class="btn btn-success" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINT VIEW ============ -->
+<div id="print-view">
+  <div class="pv-toolbar">
+    <div class="pv-title">Print View — clean version for records or handing to landlord</div>
+    <div class="pv-actions">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      <button class="btn btn-secondary" onclick="closePrintView()">← Back to Portal</button>
+    </div>
+  </div>
+  <div class="pv-page" id="pv-page">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<!-- ADD PAYMENT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-title">Add Payment</h2>
+    <form id="add-form">
+      <input type="hidden" id="edit-id">
+      <input type="hidden" id="payment-kind">
+
+      <div class="form-row">
+        <label for="f-date">Payment Date</label>
+        <input type="date" id="f-date" required>
+      </div>
+
+      <div class="form-row">
+        <label for="f-amount">Amount (AUD)</label>
+        <input type="number" id="f-amount" step="0.01" min="0.01" placeholder="e.g. 700.00" required>
+        <div class="form-hint" id="hint-amount">For rent: $700 = 1 week, $1,400 = 2 weeks, $2,800 = 4 weeks etc.</div>
+      </div>
+
+      <div class="form-row">
+        <label for="f-account">Recipient Account</label>
+        <select id="f-account" required>
+          <option value="B">Account B — BSB 064-226 / Acc 10133118 (current)</option>
+          <option value="A">Account A — BSB 923-100 / Acc 300152191 (initial)</option>
+        </select>
+      </div>
+
+      <div class="form-row" id="row-notes">
+        <label for="f-notes">Notes / Purpose</label>
+        <input type="text" id="f-notes" placeholder="e.g. Rent — paid 2 days in advance">
+      </div>
+
+      <div class="form-row" id="row-status" style="display:none;">
+        <label for="f-status">Status</label>
+        <select id="f-status">
+          <option value="sent">Sent (successful)</option>
+          <option value="rejected">Rejected (excluded from totals)</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-success" id="save-btn">Save Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ============ PASSWORD GATE ============
+const CORRECT_PASSWORD = "Pebbles123!";
+const loginScreen = document.getElementById("login-screen");
+const app = document.getElementById("app");
+document.getElementById("login-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const pw = document.getElementById("password");
+  const err = document.getElementById("error-msg");
+  if (pw.value === CORRECT_PASSWORD) {
+    loginScreen.style.display = "none";
+    app.classList.add("visible");
+    err.textContent = "";
+    pw.value = "";
+    loadFromStorage(); // restore any previously auto-saved data in this browser
+    render();
+  } else {
+    err.textContent = "Incorrect password. Try again.";
+    pw.value = ""; pw.focus();
+  }
+});
+document.getElementById("toggle-eye").addEventListener("click", function() {
+  const pw = document.getElementById("password");
+  pw.type = pw.type === "password" ? "text" : "password";
+});
+function logout() {
+  app.classList.remove("visible");
+  loginScreen.style.display = "flex";
+  document.getElementById("password").focus();
+}
+
+// ============ DATA MODEL ============
+const LEASE_START = new Date(Date.UTC(2026, 4, 6));  // Wed 6 May 2026
+const LEASE_WEEKS = 52;
+const WEEKLY_RENT = 700;
+const TOTAL_LEASE_RENT = LEASE_WEEKS * WEEKLY_RENT;  // 36,400
+
+// Seed data: everything captured from the bank statement so far
+let payments = [
+  // Rent payments
+  { id: 1,  kind: "rent",  date: "2026-05-02", amount: 700,  account: "A", notes: "Rent portion of initial $1,400 (paid 4 days before move-in)", status: "sent" },
+  { id: 2,  kind: "rent",  date: "2026-05-11", amount: 700,  account: "B", notes: "Paid 2 days in advance",                                        status: "sent" },
+  { id: 3,  kind: "rent",  date: "2026-05-11", amount: 700,  account: "B", notes: "Paid 9 days in advance",                                        status: "sent" },
+  { id: 4,  kind: "rent",  date: "2026-05-20", amount: 700,  account: "B", notes: "Paid 7 days in advance",                                        status: "sent" },
+  { id: 5,  kind: "rent",  date: "2026-05-26", amount: 700,  account: "B", notes: "Paid 1 week in advance",                                        status: "sent" },
+  { id: 6,  kind: "rent",  date: "2026-05-30", amount: 2800, account: "B", notes: "$2,800 lump sum (4 weeks advance)",                             status: "sent" },
+  { id: 7,  kind: "rent",  date: "2026-06-18", amount: 1400, account: "B", notes: "$1,400 lump sum (2 weeks advance)",                             status: "sent" },
+  { id: 8,  kind: "rent",  date: "2026-06-24", amount: 1400, account: "B", notes: "$1,400 lump sum (2 weeks advance)",                             status: "sent" },
+  { id: 9,  kind: "rent",  date: "2026-07-06", amount: 1400, account: "B", notes: "$1,400 lump sum (2 weeks advance)",                             status: "sent" },
+  { id: 19, kind: "rent",  date: "2026-07-23", amount: 1400, account: "B", notes: "$1,400 lump sum (2 weeks advance)",                             status: "sent" },
+  { id: 20, kind: "rent",  date: "2026-08-04", amount: 2800, account: "B", notes: "$2,800 lump sum (4 weeks advance)",                             status: "sent" },
+  // Bond
+  { id: 10, kind: "bond",  date: "2026-05-02", amount: 700,  account: "A", notes: "Bond — held by James as security for damages etc.",              status: "sent" },
+  // Non-rent
+  { id: 11, kind: "other", date: "2026-05-09", amount: 100,  account: "A", notes: "Ace's birthday",                                                  status: "sent" },
+  { id: 12, kind: "other", date: "2026-05-29", amount: 100,  account: "B", notes: "Food / gift for Saia",                                            status: "sent" },
+  { id: 13, kind: "other", date: "2026-06-06", amount: 30,   account: "B", notes: "Incidental",                                                      status: "sent" },
+  { id: 14, kind: "other", date: "2026-06-10", amount: 300,  account: "B", notes: "Guest accommodation — Paul, 2 nights, separate cabin",           status: "sent" },
+  { id: 15, kind: "other", date: "2026-06-12", amount: 50,   account: "B", notes: "Incidental",                                                      status: "sent" },
+  { id: 16, kind: "other", date: "2026-06-25", amount: 500,  account: "B", notes: "Incidental",                                                      status: "sent" },
+  { id: 17, kind: "other", date: "2026-07-10", amount: 120,  account: "B", notes: "Incidental",                                                      status: "sent" },
+  // Rejected
+  { id: 18, kind: "other", date: "2026-05-11", amount: 700,  account: "B", notes: "Duplicate payment attempt",                                       status: "rejected" }
+];
+let lastUpdated = "2026-08-10";
+let nextId = 21;
+
+// Editable party details (shown on Print View)
+let settings = {
+  propertyAddress: "Cabin 3, 29 Beech Road, Landsborough QLD",
+  tenantName: "Carla Oliver",
+  tenantPhone: "",
+  tenantEmail: "",
+  landlordNames: "James & Melissa Fuller",
+  landlordAddress: "29 Beech Road, Landsborough QLD",
+  landlordPhone: "",
+  landlordEmail: ""
+};
+
+// ============ AUTO-SAVE (localStorage) ============
+// Persists the ledger in this browser so changes are remembered between visits.
+// The manual 💾 Save Data / 📂 Load Data buttons still work for backups / moving devices.
+const STORAGE_KEY = "rentalLedger:fuller:v2";
+
+function saveToStorage() {
+  try {
+    const data = { version: 2, lastUpdated, nextId, payments, settings };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (err) {
+    // localStorage may be unavailable (private mode / storage full) — fail silently,
+    // manual Save Data still available as a fallback.
+    console.warn("Auto-save failed:", err);
+  }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.payments)) return false;
+    payments = data.payments;
+    lastUpdated = data.lastUpdated || lastUpdated;
+    nextId = data.nextId || (Math.max(0, ...payments.map(p => p.id)) + 1);
+    if (data.settings) settings = Object.assign(settings, data.settings);
+    return true;
+  } catch (err) {
+    console.warn("Could not restore saved data:", err);
+    return false;
+  }
+}
+
+// ============ HELPERS ============
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function fmtDate(d) {
+  return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+function fmtDateShort(iso) {
+  const d = new Date(iso + "T00:00:00Z");
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+function fmtMoney(n) {
+  return "$" + n.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function weekStart(w) { // week 1 = LEASE_START
+  return new Date(LEASE_START.getTime() + (w - 1) * 7 * 86400000);
+}
+function weekEnd(w) {
+  return new Date(weekStart(w).getTime() + 6 * 86400000);
+}
+function acctLabel(a) {
+  return a === "A"
+    ? { bsb: "923-100", acc: "300152191", cls: "acct-a" }
+    : { bsb: "064-226", acc: "10133118",  cls: "acct-b" };
+}
+function todayIso() {
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+// ============ RENDER ============
+function render() {
+  // Update timestamp
+  document.getElementById("last-updated").textContent = fmtDateShort(lastUpdated);
+
+  // Sort rent chronologically for week allocation
+  const rentPayments = payments
+    .filter(p => p.kind === "rent" && p.status === "sent")
+    .slice()
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  // Allocate weeks: split each rent payment into $700 chunks and assign to consecutive weeks
+  let weekCursor = 1;
+  const rentRows = []; // { weekNum, period, paymentDate, account, amount, notes, paymentId }
+  for (const p of rentPayments) {
+    const nWeeks = Math.round(p.amount / WEEKLY_RENT);
+    for (let i = 0; i < nWeeks; i++) {
+      rentRows.push({
+        weekNum: weekCursor,
+        paymentDate: p.date,
+        account: p.account,
+        amount: WEEKLY_RENT,
+        notes: p.notes,
+        paymentId: p.id,
+        isFirstOfPayment: i === 0,
+        totalWeeksInPayment: nWeeks,
+        paymentAmount: p.amount
+      });
+      weekCursor++;
+    }
+  }
+  const weeksPaid = rentRows.length;
+  const rentPaidTotal = weeksPaid * WEEKLY_RENT;
+  const balance = TOTAL_LEASE_RENT - rentPaidTotal;
+  const paidToDate = weeksPaid > 0 ? fmtDate(weekEnd(weeksPaid)) : "—";
+  const nextDueDate = weeksPaid < LEASE_WEEKS ? fmtDate(weekStart(weeksPaid + 1)) : "No further rent due";
+  const asAtDate = new Date(lastUpdated + "T00:00:00Z");
+  const weeksDueAsAt = asAtDate < LEASE_START ? 0 : Math.min(LEASE_WEEKS, Math.floor((asAtDate - LEASE_START) / (7 * 86400000)) + 1);
+  const weeksAheadBehind = weeksPaid - weeksDueAsAt;
+  let rentPositionText = "Up to date";
+  if (weeksAheadBehind > 0) rentPositionText = `${weeksAheadBehind} week${weeksAheadBehind === 1 ? '' : 's'} in advance (${fmtMoney(weeksAheadBehind * WEEKLY_RENT)})`;
+  if (weeksAheadBehind < 0) rentPositionText = `${Math.abs(weeksAheadBehind)} week${Math.abs(weeksAheadBehind) === 1 ? '' : 's'} in arrears (${fmtMoney(Math.abs(weeksAheadBehind) * WEEKLY_RENT)})`;
+
+  // Render rent table
+  const rentTbody = document.getElementById("rent-tbody");
+  if (rentRows.length === 0) {
+    rentTbody.innerHTML = '<tr><td colspan="8" class="empty-row">No rent payments recorded yet. Click "+ Add Rent Payment" to add one.</td></tr>';
+  } else {
+    rentTbody.innerHTML = rentRows.map(r => {
+      const a = acctLabel(r.account);
+      const s = weekStart(r.weekNum), e = weekEnd(r.weekNum);
+      const actions = r.isFirstOfPayment
+        ? `<div class="row-actions">
+             <button class="btn btn-sm btn-secondary" onclick="editPayment(${r.paymentId})">Edit</button>
+             <button class="btn btn-sm btn-danger" onclick="deletePayment(${r.paymentId})">×</button>
+           </div>`
+        : "";
+      const noteCell = r.isFirstOfPayment
+        ? (r.totalWeeksInPayment > 1 ? `${fmtMoney(r.paymentAmount)} lump sum — ${r.notes}` : r.notes)
+        : `↳ same payment (${fmtMoney(r.paymentAmount)} covers ${r.totalWeeksInPayment} wks)`;
+      return `<tr>
+        <td>${r.weekNum}</td>
+        <td>${fmtDate(s)} – ${fmtDate(e)}</td>
+        <td>${fmtDateShort(r.paymentDate)}</td>
+        <td class="acct ${a.cls}">${a.bsb}</td>
+        <td class="acct ${a.cls}">${a.acc}</td>
+        <td class="num paid">${fmtMoney(r.amount)}</td>
+        <td>${noteCell}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join("") + `<tr style="background: var(--bg-subtle); font-weight: 600;">
+      <td colspan="5">SUBTOTAL — Rent Paid (${weeksPaid} weeks)</td>
+      <td class="num paid">${fmtMoney(rentPaidTotal)}</td><td colspan="2"></td>
+    </tr>`;
+  }
+
+  // Remaining schedule
+  const remainingTbody = document.getElementById("remaining-tbody");
+  if (weeksPaid >= LEASE_WEEKS) {
+    remainingTbody.innerHTML = '<tr><td colspan="4" class="empty-row" style="color: var(--success);">🎉 All 52 weeks paid — lease fully covered!</td></tr>';
+  } else {
+    let html = "";
+    for (let w = weeksPaid + 1; w <= LEASE_WEEKS; w++) {
+      const s = weekStart(w), e = weekEnd(w);
+      html += `<tr><td>${w}</td><td>${fmtDate(s)} – ${fmtDate(e)}</td><td class="num">${fmtMoney(WEEKLY_RENT)}</td><td style="color: var(--warning); font-weight: 500;">Due</td></tr>`;
+    }
+    html += `<tr style="background: var(--bg-subtle); font-weight: 600;"><td colspan="2">SUBTOTAL — Rent Remaining (${LEASE_WEEKS - weeksPaid} weeks)</td><td class="num" style="color: var(--warning);">${fmtMoney(balance)}</td><td></td></tr>`;
+    remainingTbody.innerHTML = html;
+  }
+
+  // Bond + non-rent (sorted by date)
+  const otherPayments = payments
+    .filter(p => p.kind === "bond" || p.kind === "other")
+    .slice()
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const bondTotal = otherPayments.filter(p => p.kind === "bond" && p.status === "sent").reduce((s,p) => s + p.amount, 0);
+  const nonRentTotal = otherPayments.filter(p => p.kind === "other" && p.status === "sent").reduce((s,p) => s + p.amount, 0);
+  const otherTbody = document.getElementById("other-tbody");
+  if (otherPayments.length === 0) {
+    otherTbody.innerHTML = '<tr><td colspan="6" class="empty-row">No other payments recorded.</td></tr>';
+  } else {
+    otherTbody.innerHTML = otherPayments.map(p => {
+      const a = acctLabel(p.account);
+      const rowClass = p.kind === "bond" ? "bond-row" : "";
+      const style = p.status === "rejected" ? 'style="opacity:0.55;"' : "";
+      const amtCell = p.status === "rejected"
+        ? `<s>${fmtMoney(p.amount)}</s>`
+        : fmtMoney(p.amount);
+      const purpose = p.kind === "bond"
+        ? `<strong>Bond</strong> — ${p.notes}`
+        : (p.status === "rejected" ? `<strong>REJECTED</strong> — ${p.notes} (excluded)` : p.notes);
+      return `<tr class="${rowClass}" ${style}>
+        <td>${fmtDateShort(p.date)}</td>
+        <td class="acct ${a.cls}">${a.bsb}</td>
+        <td class="acct ${a.cls}">${a.acc}</td>
+        <td class="num">${amtCell}</td>
+        <td>${purpose}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-secondary" onclick="editPayment(${p.id})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id})">×</button>
+        </div></td>
+      </tr>`;
+    }).join("") + `<tr style="background: var(--bg-subtle); font-weight: 600;">
+      <td colspan="3">TOTAL (Bond + Non-Rent, successful only)</td>
+      <td class="num">${fmtMoney(bondTotal + nonRentTotal)}</td><td colspan="2"></td>
+    </tr>`;
+  }
+
+  // Update all summary numbers
+  const totalSent = rentPaidTotal + bondTotal + nonRentTotal;
+  document.getElementById("stat-rent-paid").textContent = fmtMoney(rentPaidTotal);
+  document.getElementById("stat-balance").textContent   = fmtMoney(balance);
+  document.getElementById("stat-weeks-paid").textContent = `${weeksPaid} / ${LEASE_WEEKS}`;
+  document.getElementById("stat-paid-to").textContent   = paidToDate;
+  document.getElementById("stat-next-due").textContent  = nextDueDate;
+  document.getElementById("stat-rent-position").textContent = rentPositionText;
+  document.getElementById("stat-bond").textContent      = fmtMoney(bondTotal);
+  document.getElementById("stat-nonrent").textContent   = fmtMoney(nonRentTotal);
+  document.getElementById("stat-total-sent").textContent = fmtMoney(totalSent);
+  document.getElementById("footer-paid-to").textContent = paidToDate;
+  document.getElementById("footer-next-due").textContent = nextDueDate;
+  document.getElementById("footer-rent-position").textContent = `${rentPositionText} as at ${fmtDateShort(lastUpdated)}`;
+
+  document.getElementById("gt-rent-paid").textContent = fmtMoney(rentPaidTotal);
+  document.getElementById("gt-balance").textContent   = fmtMoney(balance);
+  document.getElementById("gt-bond").textContent      = fmtMoney(bondTotal);
+  document.getElementById("gt-nonrent").textContent   = fmtMoney(nonRentTotal);
+  document.getElementById("gt-total-sent").textContent = fmtMoney(totalSent);
+
+  const pct = (weeksPaid / LEASE_WEEKS) * 100;
+  document.getElementById("progress-text").textContent = `${weeksPaid} / ${LEASE_WEEKS} weeks (${fmtMoney(rentPaidTotal)} of ${fmtMoney(TOTAL_LEASE_RENT)})`;
+  document.getElementById("progress-pct").textContent = pct.toFixed(1) + "%";
+  document.getElementById("progress-fill").style.width = pct + "%";
+
+  // Auto-save the current state so it persists in this browser between visits.
+  saveToStorage();
+}
+
+// ============ ADD / EDIT / DELETE ============
+function openAddModal(kind) {
+  document.getElementById("edit-id").value = "";
+  document.getElementById("payment-kind").value = kind;
+  document.getElementById("modal-title").textContent = kind === "rent" ? "Add Rent Payment" : "Add Other Payment";
+  document.getElementById("f-date").value = todayIso();
+  document.getElementById("f-amount").value = kind === "rent" ? "700" : "";
+  document.getElementById("f-account").value = "B";
+  document.getElementById("f-notes").value = "";
+  document.getElementById("f-status").value = "sent";
+  document.getElementById("row-status").style.display = kind === "rent" ? "none" : "block";
+  document.getElementById("hint-amount").style.display = kind === "rent" ? "block" : "none";
+  document.getElementById("modal-overlay").classList.add("open");
+}
+
+function editPayment(id) {
+  const p = payments.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById("edit-id").value = id;
+  document.getElementById("payment-kind").value = p.kind;
+  document.getElementById("modal-title").textContent = "Edit Payment";
+  document.getElementById("f-date").value = p.date;
+  document.getElementById("f-amount").value = p.amount;
+  document.getElementById("f-account").value = p.account;
+  document.getElementById("f-notes").value = p.notes;
+  document.getElementById("f-status").value = p.status;
+  document.getElementById("row-status").style.display = p.kind === "rent" ? "none" : "block";
+  document.getElementById("hint-amount").style.display = p.kind === "rent" ? "block" : "none";
+  document.getElementById("modal-overlay").classList.add("open");
+}
+
+function deletePayment(id) {
+  const p = payments.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`Delete this payment?\n\n${fmtDateShort(p.date)} — ${fmtMoney(p.amount)} — ${p.notes}`)) return;
+  payments = payments.filter(x => x.id !== id);
+  lastUpdated = todayIso();
+  render();
+}
+
+function closeModal() {
+  document.getElementById("modal-overlay").classList.remove("open");
+}
+
+document.getElementById("add-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const id = document.getElementById("edit-id").value;
+  const kind = document.getElementById("payment-kind").value;
+  const data = {
+    date: document.getElementById("f-date").value,
+    amount: parseFloat(document.getElementById("f-amount").value),
+    account: document.getElementById("f-account").value,
+    notes: document.getElementById("f-notes").value || (kind === "rent" ? "Rent payment" : "Payment"),
+    status: kind === "rent" ? "sent" : document.getElementById("f-status").value,
+    kind: kind
+  };
+  if (id) {
+    const idx = payments.findIndex(x => x.id === parseInt(id));
+    if (idx >= 0) payments[idx] = { ...payments[idx], ...data };
+  } else {
+    payments.push({ id: nextId++, ...data });
+  }
+  lastUpdated = todayIso();
+  closeModal();
+  render();
+});
+
+// Close modal on background click
+document.getElementById("modal-overlay").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ============ SAVE / LOAD ============
+function exportData() {
+  const data = { version: 2, lastUpdated: lastUpdated, nextId: nextId, payments: payments, settings: settings };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = todayIso();
+  a.href = url;
+  a.download = `rental_ledger_data_${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============ SETTINGS ============
+function openSettings() {
+  document.getElementById("s-property-addr").value  = settings.propertyAddress;
+  document.getElementById("s-tenant-name").value    = settings.tenantName;
+  document.getElementById("s-tenant-phone").value   = settings.tenantPhone;
+  document.getElementById("s-tenant-email").value   = settings.tenantEmail;
+  document.getElementById("s-landlord-names").value = settings.landlordNames;
+  document.getElementById("s-landlord-addr").value  = settings.landlordAddress;
+  document.getElementById("s-landlord-phone").value = settings.landlordPhone;
+  document.getElementById("s-landlord-email").value = settings.landlordEmail;
+  document.getElementById("settings-overlay").classList.add("open");
+}
+function closeSettings() {
+  document.getElementById("settings-overlay").classList.remove("open");
+}
+function saveSettings() {
+  settings.propertyAddress = document.getElementById("s-property-addr").value.trim();
+  settings.tenantName      = document.getElementById("s-tenant-name").value.trim();
+  settings.tenantPhone     = document.getElementById("s-tenant-phone").value.trim();
+  settings.tenantEmail     = document.getElementById("s-tenant-email").value.trim();
+  settings.landlordNames   = document.getElementById("s-landlord-names").value.trim();
+  settings.landlordAddress = document.getElementById("s-landlord-addr").value.trim();
+  settings.landlordPhone   = document.getElementById("s-landlord-phone").value.trim();
+  settings.landlordEmail   = document.getElementById("s-landlord-email").value.trim();
+  lastUpdated = todayIso();
+  closeSettings();
+  render();
+}
+document.getElementById("settings-overlay").addEventListener("click", function(e) {
+  if (e.target === this) closeSettings();
+});
+
+// ============ PRINT VIEW ============
+function openPrintView() {
+  buildPrintView();
+  document.getElementById("print-view").classList.add("active");
+  window.scrollTo(0, 0);
+}
+function closePrintView() {
+  document.getElementById("print-view").classList.remove("active");
+}
+
+function buildPrintView() {
+  // Recompute the same figures render() uses
+  const rentPayments = payments.filter(p => p.kind === "rent" && p.status === "sent").slice().sort((a,b) => a.date.localeCompare(b.date));
+  let weekCursor = 1;
+  const rentRows = [];
+  for (const p of rentPayments) {
+    const nWeeks = Math.round(p.amount / WEEKLY_RENT);
+    for (let i = 0; i < nWeeks; i++) {
+      rentRows.push({ weekNum: weekCursor, paymentDate: p.date, account: p.account, notes: p.notes, isFirstOfPayment: i === 0, totalWeeksInPayment: nWeeks, paymentAmount: p.amount });
+      weekCursor++;
+    }
+  }
+  const weeksPaid = rentRows.length;
+  const rentPaidTotal = weeksPaid * WEEKLY_RENT;
+  const balance = TOTAL_LEASE_RENT - rentPaidTotal;
+  const paidToDate = weeksPaid > 0 ? fmtDate(weekEnd(weeksPaid)) : "—";
+  const nextDueDate = weeksPaid < LEASE_WEEKS ? fmtDate(weekStart(weeksPaid + 1)) : "No further rent due";
+  const asAtDate = new Date(lastUpdated + "T00:00:00Z");
+  const weeksDueAsAt = asAtDate < LEASE_START ? 0 : Math.min(LEASE_WEEKS, Math.floor((asAtDate - LEASE_START) / (7 * 86400000)) + 1);
+  const weeksAheadBehind = weeksPaid - weeksDueAsAt;
+  let rentPositionText = "Up to date";
+  if (weeksAheadBehind > 0) rentPositionText = `${weeksAheadBehind} week${weeksAheadBehind === 1 ? '' : 's'} in advance (${fmtMoney(weeksAheadBehind * WEEKLY_RENT)})`;
+  if (weeksAheadBehind < 0) rentPositionText = `${Math.abs(weeksAheadBehind)} week${Math.abs(weeksAheadBehind) === 1 ? '' : 's'} in arrears (${fmtMoney(Math.abs(weeksAheadBehind) * WEEKLY_RENT)})`;
+
+  const otherPayments = payments.filter(p => p.kind === "bond" || p.kind === "other").slice().sort((a,b) => a.date.localeCompare(b.date));
+  const bondTotal = otherPayments.filter(p => p.kind === "bond" && p.status === "sent").reduce((s,p) => s + p.amount, 0);
+  const nonRentTotal = otherPayments.filter(p => p.kind === "other" && p.status === "sent").reduce((s,p) => s + p.amount, 0);
+  const totalSent = rentPaidTotal + bondTotal + nonRentTotal;
+
+  // Build rent rows HTML
+  const rentHtml = rentRows.map(r => {
+    const a = acctLabel(r.account);
+    const s = weekStart(r.weekNum), e = weekEnd(r.weekNum);
+    const dateCell = r.isFirstOfPayment ? fmtDateShort(r.paymentDate) : "—";
+    const amtCell = r.isFirstOfPayment && r.totalWeeksInPayment > 1
+      ? `${fmtMoney(WEEKLY_RENT)} <span style="color:#666;font-size:8.5pt;">(of ${fmtMoney(r.paymentAmount)})</span>`
+      : fmtMoney(WEEKLY_RENT);
+    return `<tr>
+      <td>${r.weekNum}</td>
+      <td>${fmtDate(s)} – ${fmtDate(e)}</td>
+      <td>${dateCell}</td>
+      <td class="pv-acct">${a.bsb} / ${a.acc}</td>
+      <td class="pv-num">${amtCell}</td>
+    </tr>`;
+  }).join("");
+
+  // Build other payments HTML
+  const otherHtml = otherPayments.filter(p => p.status === "sent").map(p => {
+    const a = acctLabel(p.account);
+    const purpose = p.kind === "bond" ? `Bond — ${p.notes}` : p.notes;
+    return `<tr>
+      <td>${fmtDateShort(p.date)}</td>
+      <td class="pv-acct">${a.bsb} / ${a.acc}</td>
+      <td>${purpose}</td>
+      <td class="pv-num">${fmtMoney(p.amount)}</td>
+    </tr>`;
+  }).join("");
+
+  const today = fmtDateShort(todayIso());
+
+  // Build parties block (only include filled contact fields)
+  const tenantContact = [settings.tenantPhone, settings.tenantEmail].filter(Boolean).join(" · ");
+  const landlordContact = [settings.landlordPhone, settings.landlordEmail].filter(Boolean).join(" · ");
+
+  document.getElementById("pv-page").innerHTML = `
+    <div class="pv-header">
+      <h1>Rental Payment Ledger</h1>
+      <div class="pv-subtitle">Statement of Payments — Long-Term Residential Tenancy</div>
+      <div class="pv-meta-line">Prepared: ${today} &nbsp;·&nbsp; Statement covers period from lease commencement to date</div>
+    </div>
+
+    <h2 class="pv-section">Rental Property</h2>
+    <div style="font-size:11.5pt;margin:6px 0 18px 0;padding:8px 12px;background:#fafafa;border-left:3px solid #333;">
+      <strong>${settings.propertyAddress || '(Property address not set)'}</strong>
+    </div>
+
+    <h2 class="pv-section">Parties to the Tenancy</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:8px 0 18px 0;">
+      <div style="border:1px solid #999;padding:10px 12px;background:#fafafa;">
+        <div style="font-size:9pt;text-transform:uppercase;letter-spacing:0.5px;color:#555;font-weight:700;margin-bottom:4px;">Lessee / Tenant</div>
+        <div style="font-size:11.5pt;font-weight:700;">${settings.tenantName || '(Tenant name not set)'}</div>
+        ${tenantContact ? `<div style="font-size:10pt;color:#333;margin-top:4px;">${tenantContact}</div>` : ''}
+      </div>
+      <div style="border:1px solid #999;padding:10px 12px;background:#fafafa;">
+        <div style="font-size:9pt;text-transform:uppercase;letter-spacing:0.5px;color:#555;font-weight:700;margin-bottom:4px;">Lessor / Landlord</div>
+        <div style="font-size:11.5pt;font-weight:700;">${settings.landlordNames || '(Landlord names not set)'}</div>
+        ${settings.landlordAddress ? `<div style="font-size:10pt;color:#333;margin-top:4px;">${settings.landlordAddress}</div>` : ''}
+        ${landlordContact ? `<div style="font-size:10pt;color:#333;margin-top:2px;">${landlordContact}</div>` : ''}
+      </div>
+    </div>
+
+    <h2 class="pv-section">Tenancy Details</h2>
+    <div class="pv-info-grid">
+      <div class="pv-row"><span class="lbl">Weekly Rent</span><span class="val">${fmtMoney(WEEKLY_RENT)}</span></div>
+      <div class="pv-row"><span class="lbl">Rent Period</span><span class="val">Wednesday to Tuesday</span></div>
+      <div class="pv-row"><span class="lbl">Lease Start</span><span class="val">Wed 6 May 2026</span></div>
+      <div class="pv-row"><span class="lbl">Lease End</span><span class="val">Tue 4 May 2027</span></div>
+      <div class="pv-row"><span class="lbl">Lease Term</span><span class="val">12 months (52 weeks)</span></div>
+      <div class="pv-row"><span class="lbl">Total Rent Over Lease</span><span class="val">${fmtMoney(TOTAL_LEASE_RENT)}</span></div>
+      <div class="pv-row"><span class="lbl">Bond Held</span><span class="val">${fmtMoney(bondTotal)}</span></div>
+      <div class="pv-row"><span class="lbl">Rent Paid Up To</span><span class="val">${paidToDate}</span></div>
+      <div class="pv-row"><span class="lbl">Next Rent Due</span><span class="val">${nextDueDate}</span></div>
+      <div class="pv-row"><span class="lbl">Rent Position</span><span class="val">${rentPositionText} as at ${fmtDateShort(lastUpdated)}</span></div>
+    </div>
+
+    <h2 class="pv-section">Rent Payments — Week-by-Week</h2>
+    <table class="pv-table">
+      <thead><tr><th>Wk</th><th>Rent Period</th><th>Paid On</th><th>To Account (BSB / Acc)</th><th class="pv-num">Amount</th></tr></thead>
+      <tbody>
+        ${rentHtml}
+        <tr class="pv-total"><td colspan="4">SUBTOTAL — Rent Paid (${weeksPaid} weeks)</td><td class="pv-num">${fmtMoney(rentPaidTotal)}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="pv-section">Bond &amp; Other Payments</h2>
+    <table class="pv-table">
+      <thead><tr><th>Date</th><th>To Account (BSB / Acc)</th><th>Purpose</th><th class="pv-num">Amount</th></tr></thead>
+      <tbody>
+        ${otherHtml || '<tr><td colspan="4" style="text-align:center;color:#888;">No other payments recorded.</td></tr>'}
+        <tr class="pv-total"><td colspan="3">SUBTOTAL — Bond + Other</td><td class="pv-num">${fmtMoney(bondTotal + nonRentTotal)}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="pv-section">Summary of Position</h2>
+    <div class="pv-totals-box">
+      <div class="pv-total-row"><span>Total rent payable over 12-month lease</span><span>${fmtMoney(TOTAL_LEASE_RENT)}</span></div>
+      <div class="pv-total-row"><span>Rent paid to date (${weeksPaid} of ${LEASE_WEEKS} weeks)</span><span>${fmtMoney(rentPaidTotal)}</span></div>
+      <div class="pv-total-row"><span>Rent balance still to pay (${LEASE_WEEKS - weeksPaid} weeks)</span><span>${fmtMoney(balance)}</span></div>
+      <div class="pv-total-row"><span>Rent position as at ${fmtDateShort(lastUpdated)}</span><span>${rentPositionText}</span></div>
+      <div class="pv-total-row"><span>Bond held by landlord (refundable)</span><span>${fmtMoney(bondTotal)}</span></div>
+      <div class="pv-total-row"><span>Non-rent payments to landlord</span><span>${fmtMoney(nonRentTotal)}</span></div>
+      <div class="pv-total-row pv-grand"><span>TOTAL PAID TO LANDLORD (all purposes)</span><span>${fmtMoney(totalSent)}</span></div>
+    </div>
+
+    <div class="pv-declaration">
+      Rent is paid up to and including <strong>${paidToDate}</strong>. The next rent falls due on <strong>${nextDueDate}</strong>. The above ledger records all payments made by ${settings.tenantName || 'the tenant'} to ${settings.landlordNames || 'the landlord'} in respect of the tenancy of <strong>${settings.propertyAddress || 'the rental property'}</strong>, commencing 6 May 2026, based on the tenant's bank transaction records. Rejected/failed bank transactions have been excluded. This statement is provided as a personal record and is not a legally certified document.
+    </div>
+
+    <div class="pv-signatures">
+      <div class="pv-sig-block">
+        <div class="pv-sig-line"></div>
+        <div class="pv-sig-label"><strong>${settings.tenantName || 'Tenant'}</strong> (Lessee) — Signature &amp; Date</div>
+      </div>
+      <div class="pv-sig-block">
+        <div class="pv-sig-line"></div>
+        <div class="pv-sig-label"><strong>${settings.landlordNames || 'Landlord'}</strong> (Lessor) — Signature &amp; Date</div>
+      </div>
+    </div>
+
+    <div class="pv-footer">
+      Rental Ledger — Prepared ${today} · Confidential
+    </div>
+  `;
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.payments || !Array.isArray(data.payments)) throw new Error("Invalid file");
+      if (!confirm(`Load ${data.payments.length} payments from this file?\n\nThis will REPLACE the current data on screen.`)) {
+        event.target.value = "";
+        return;
+      }
+      payments = data.payments;
+      lastUpdated = data.lastUpdated || todayIso();
+      nextId = data.nextId || (Math.max(0, ...payments.map(p => p.id)) + 1);
+      if (data.settings) settings = Object.assign(settings, data.settings);
+      render();
+      alert("Ledger data loaded successfully.");
+    } catch (err) {
+      alert("Could not load file: " + err.message);
+    }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
+}
+</script>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
